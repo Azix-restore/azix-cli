@@ -54,10 +54,7 @@ var notifyServer = function () {
     port: serverUtils.serverPORT,
     path: serverUtils.serverAPIINIT,
   }, function(res) {
-    var resBody;
-    res.on('data', function (chunk) {
-      resBody += chunk;
-    });
+    var resBody = serverUtils.chunk(res);
 
     clonePristineRepo(JSON.parse(resBody));
   });
