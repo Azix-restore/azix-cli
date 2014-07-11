@@ -4,6 +4,7 @@ var inquirer = require('inquirer');
 var utils = require('../lib/utils.js');
 var serverUtils = require('../lib/serverutils.js');
 var http = require('http');
+var git = require('gift');
 
 // Global variables storing necessary paths
 var homepath = utils.getUserHome();
@@ -25,13 +26,26 @@ var createAzixJSON = function() {
   azixJSON.password = azixconfig.password;
   azixJSON.timestamp = new Date();
 
-  //writes a new azix.json file
-  fs.writeFileSync(azixJSONPath, JSON.stringify(azixJSON));
+};
+
+var promptProjectName = function () {
+  inquirer.prompt([{
+    type:'input',
+    name:'projectName',
+    message:'Please input your unique azix project name'
+  }], function(answer){
+    azixJSON.projectName = answer.projectName;
+  });
 };
 
 
 var clonePristineRepo = function(responseObject) {
   var repoURL = responseObject.endpoint;
+
+  git.clone(repoURL, path.join(cwdPath, '??????'), function(err, repo) {
+    if (err) {console.log(err);}
+    console.log(repo);
+  });
 };
 
 
@@ -52,7 +66,9 @@ var notifyServer = function () {
   });
 
   req.on('error', function(err) {
-    console.log(err);
+    if (err.message = 'project name taken') {
+      init();
+    }
   });
 
   // send user information as POST request body
@@ -63,6 +79,7 @@ var notifyServer = function () {
 
 // main init function (exported)
 var init = function () {
+  promptProjectName();
   createAzixJSON();
   notifyServer();
 };
