@@ -5,7 +5,7 @@ var utils = require('../lib/utils');
 
 // Global variables storing necessary paths
 var homepath = utils.getUserHome();
-var azixPath = path.join(homepath, '.azixconfig');
+var azixconfigPath = path.join(homepath, '.azixconfig');
 
 
 // Global object that stores user information
@@ -28,7 +28,7 @@ var configQuestions = function() {
   ];
   inquirer.prompt(questions, function(answers) {
     userInformation = answers;
-    fs.writeFileSync(azixPath, JSON.stringify(userInformation));
+    fs.writeFileSync(azixconfigPath, JSON.stringify(userInformation));
   });
 };
 
