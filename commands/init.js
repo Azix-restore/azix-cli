@@ -54,9 +54,13 @@ var notifyServer = function () {
     port: serverUtils.serverPORT,
     path: serverUtils.serverAPIINIT,
   }, function(res) {
-    var resBody = serverUtils.chunk(res);
-
-    clonePristineRepo(JSON.parse(resBody));
+    var resBody;
+    res.on('data', function (chunk) {
+      resBody += chunk;
+    });
+    res.on('end', function() {
+      clonePristineRepo(JSON.parse(resBody));
+    });
   });
 
   // server checks for unique project name
