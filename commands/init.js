@@ -1,5 +1,20 @@
+var fs = require('fs');
+var path = require('path');
+var inquirer = require('inquirer');
+var utils = require('../lib/utils');
+
+
+var createAzixJSON = function() {
+
+};
+
+
+
+
+
+
 var init = function () {
-  console.log("init");
+  createAzixJSON();
 };
 
 module.exports = init;

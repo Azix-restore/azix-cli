@@ -1,14 +1,10 @@
 var fs = require('fs');
 var path = require('path');
-var inquirer = require("inquirer");
-
-// Returns the User's Home directory irrespective of operating system. Untested on Windows.
-var getUserHome = function() {
-  return process.env[(process.platform === 'win32') ? 'USERPROFILE' : 'HOME'];
-};
+var inquirer = require('inquirer');
+var utils = require('../lib/utils');
 
 // Global variables storing necessary paths
-var homepath = getUserHome();
+var homepath = utils.getUserHome();
 var azixPath = path.join(homepath, '.azixconfig');
 
 
@@ -20,14 +16,14 @@ var userInformation = {};
 var configQuestions = function() {
   var questions = [
     {
-      type: "input",
-      name: "username",
-      message: "Please input your azix username"
+      type: 'input',
+      name: 'username',
+      message: 'Please input your azix username'
     },
     {
-      type: "password",
-      name: "password",
-      message: "Please input your azix password"
+      type: 'password',
+      name: 'password',
+      message: 'Please input your azix password'
     }
   ];
   inquirer.prompt(questions, function(answers) {
