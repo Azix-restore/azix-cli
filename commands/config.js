@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var inquirer = require('inquirer');
-var utils = require('../lib/utils');
+var utils = require('../lib/utils.js');
 
 // Global variables storing necessary paths
 var homepath = utils.getUserHome();
