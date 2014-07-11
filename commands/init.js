@@ -23,19 +23,19 @@ var azixJSON = {};
 
 
 // Ask for a unique project name from the user
-var promptProjectName = function () {
+var promptProjectName = function (next) {
   inquirer.prompt([{
     type:'input',
     name:'projectName',
     message:'Please input your (unique) azix project name'
   }], function(answer){
     azixJSON.projectName = answer.projectName;
+    next();
   });
 };
 
-
 // Create azix JSON object (stored in memory)
-var createAzixJSON = function() {
+var createAzixJSON = function(next) {
   // reads global user information from home directory
   var azixconfig = JSON.parse(fs.readFileSync(azixconfigPath, {encoding:'utf8'}));
 
@@ -43,20 +43,7 @@ var createAzixJSON = function() {
   azixJSON.password = azixconfig.password;
   azixJSON.timestamp = new Date();
 
-};
-
-
-var clonePristineRepo = function(responseObject) {
-  var repoURL = responseObject.endpoint;
-  var projectPath = path.join(cwdPath, azixJSON.projectName);
-  // perhaps validate that directory called projectName doesn't already exist?
-  git.clone(repoURL, projectPath, function(err) {
-    if (err) {
-      console.log(err);
-    }
-    fs.writeFileSync(path.join(projectPath, 'azix.json'), azixJSON);
-    console.log('Project initiated!');
-  });
+  next();
 };
 
 // sends a post request notifying the server of input sources added by the user initiating a chain of commands
@@ -89,11 +76,27 @@ var notifyServer = function () {
   req.end();
 };
 
+var clonePristineRepo = function(responseObject) {
+
+  var repoURL = responseObject.endpoint;
+  var projectPath = path.join(cwdPath, azixJSON.projectName);
+  // perhaps validate that directory called projectName doesn't already exist?
+  git.clone(repoURL, projectPath, function(err) {
+    if (err) {
+      console.log(err);
+    }
+    fs.writeFileSync(path.join(projectPath, 'azix.json'), azixJSON);
+    console.log('Project initiated!');
+  });
+};
+
 // main init function (exported)
 var init = function () {
-  promptProjectName();
-  createAzixJSON();
-  notifyServer();
+  promptProjectName(function(){
+    createAzixJSON(function(){
+      notifyServer();
+    });
+  });
 };
 
 module.exports = init;
