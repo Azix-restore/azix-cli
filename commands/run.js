@@ -1,10 +1,10 @@
 // Assume user has cd'd into the azix project folder and added files to the requisite folders
 
-var Q = require('q');
+var fs = require('fs');
+var http = require('http');
 var path = require('path');
 var git = require('gift');
-var http = require('http');
-var fs = require('fs');
+var Q = require('q');
 var serverUtils = require('../lib/serverutils.js');
 
 var currentPath = process.cwd();
@@ -24,7 +24,7 @@ var gitAdd = function(folder) {
     deferred.resolve();
   });
 
-  return deferred;
+  return deferred.promise;
 };
 
 var gitCommit = function () {
@@ -37,7 +37,7 @@ var gitCommit = function () {
     deferred.resolve();
   });
 
-  return deferred;
+  return deferred.promise;
 };
 
 var gitPush = function () {
@@ -50,7 +50,7 @@ var gitPush = function () {
     deferred.resolve();
   });
 
-  return deferred;
+  return deferred.promise;
 };
 
 var notifyServer = function () {
@@ -78,7 +78,7 @@ var notifyServer = function () {
   req.write(azixJSON);
   req.end();
 
-  return deferred;
+  return deferred.promise;
 };
 
 
@@ -90,9 +90,7 @@ var run = function () {
   .then(gitCommit)
   .then(gitPush)
   .then(notifyServer)
-  .catch(function(err) {
-    console.log(err);
-  });
+  .catch(console.log);
 };
 
 module.exports = run;
