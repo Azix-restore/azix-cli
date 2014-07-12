@@ -29,18 +29,18 @@ var promptProjectName = function () {
     name:'projectName',
     message:'Please input your (unique) azix project name'
   }], function(answer){
-    azixJSON.projectName = answer.projectName;
-    deferred.resolve();
+    deferred.resolve(answer.projectName);
   });
 
   return deferred.promise;
 };
 
-var createAzixJSON = function() {
+var createAzixJSON = function(projectName) {
   var deferred = Q.defer();
 
   azixJSON.username = azixconfig.username;
   azixJSON.password = azixconfig.password;
+  azixJSON.projectName = projectName;
   azixJSON.timestamp = (new Date()).toString();
 
   deferred.resolve();
