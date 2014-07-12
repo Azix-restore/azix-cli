@@ -4,7 +4,6 @@
 //   -> clones down that repo from server using git clone (gift)
 //     -> said folder should contain three directories without removing any existing data
 
-
 var fs = require('fs');
 var path = require('path');
 var inquirer = require('inquirer');
@@ -21,7 +20,6 @@ var azixconfigPath = path.join(homepath, '.azixconfig');
 var azixconfig = JSON.parse(fs.readFileSync(azixconfigPath, {encoding:'utf8'}));
 
 var azixJSON = {};
-
 
 var promptProjectName = function () {
   var deferred = Q.defer();
@@ -43,7 +41,7 @@ var createAzixJSON = function() {
 
   azixJSON.username = azixconfig.username;
   azixJSON.password = azixconfig.password;
-  azixJSON.timestamp = new Date();
+  azixJSON.timestamp = (new Date()).toString();
 
   deferred.resolve();
 

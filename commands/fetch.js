@@ -26,13 +26,7 @@ var gitCurrent = function () {
 var gitPull = function () {
   var deferred = Q.defer();
 
-  repo.pull (function(err) {
-    if (err) {
-      deferred.reject(err);
-    }
-
-    deferred.resolve();
-  });
+  repo.pull (deferred.makeNodeResolver());
 
   return deferred.promise;
 };

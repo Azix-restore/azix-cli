@@ -9,20 +9,14 @@ var serverUtils = require('../lib/serverutils.js');
 
 var currentPath = process.cwd();
 
-var azixJSON = fs.readFileSync(path.join(currentPath, 'azix.json'), {encoding:'utf8'});
-
 var repo = git(currentPath);
 
+var azixJSON = fs.readFileSync(path.join(currentPath, 'azix.json'), {encoding:'utf8'});
 
 var gitAdd = function(folder) {
   var deferred = Q.defer();
 
-  repo.add(path.join(currentPath, folder), function(err){
-    if(err) {
-      deferred.reject(err);
-    }
-    deferred.resolve();
-  });
+  repo.add(path.join(currentPath, folder), deferred.makeNodeResolver());
 
   return deferred.promise;
 };
@@ -30,12 +24,7 @@ var gitAdd = function(folder) {
 var gitCommit = function () {
   var deferred = Q.defer();
 
-  repo.commit((new Date()).toString(), function(err){
-    if(err) {
-      deferred.reject(err);
-    }
-    deferred.resolve();
-  });
+  repo.commit((new Date()).toString(), deferred.makeNodeResolver());
 
   return deferred.promise;
 };
@@ -43,12 +32,7 @@ var gitCommit = function () {
 var gitPush = function () {
   var deferred = Q.defer();
 
-  repo.remote_push('origin', 'master', function(err){
-    if(err) {
-      deferred.reject(err);
-    }
-    deferred.resolve();
-  });
+  repo.remote_push('origin', 'master', deferred.makeNodeResolver());
 
   return deferred.promise;
 };
@@ -67,7 +51,7 @@ var notifyServer = function () {
       resBody += chunk;
     });
     res.on('end', function() {
-      deferred.resolve();
+      deferred.resolve(resBody);
     });
   });
 
@@ -81,7 +65,6 @@ var notifyServer = function () {
   return deferred.promise;
 };
 
-
 var run = function () {
   gitAdd('scripts')
   .then(function(){
@@ -90,6 +73,7 @@ var run = function () {
   .then(gitCommit)
   .then(gitPush)
   .then(notifyServer)
+  .then(console.log)
   .catch(console.log);
 };
 
