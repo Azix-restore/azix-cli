@@ -4,7 +4,6 @@ var git = require('gift');
 var Q = require('q');
 
 var currentPath = process.cwd();
-
 var repo = git(currentPath);
 
 var commits = [];

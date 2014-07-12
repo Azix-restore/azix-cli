@@ -12,42 +12,47 @@ var utils = require('../lib/utils.js');
 var serverUtils = require('../lib/serverutils.js');
 var http = require('http');
 var git = require('gift');
+var Q = require('q');
 
-// Global variables storing necessary paths
 var homepath = utils.getUserHome();
 var cwdPath = process.cwd();
-var azixconfigPath = path.join(homepath, '.azixconfig');
 
-// Object storing our json file preferences && user information
+var azixconfigPath = path.join(homepath, '.azixconfig');
+var azixconfig = JSON.parse(fs.readFileSync(azixconfigPath, {encoding:'utf8'}));
+
 var azixJSON = {};
 
 
-// Ask for a unique project name from the user
-var promptProjectName = function (next) {
+var promptProjectName = function () {
+  var deferred = Q.defer();
+
   inquirer.prompt([{
     type:'input',
     name:'projectName',
     message:'Please input your (unique) azix project name'
   }], function(answer){
     azixJSON.projectName = answer.projectName;
-    next();
+    deferred.resolve();
   });
+
+  return deferred.promise;
 };
 
-// Create azix JSON object (stored in memory)
-var createAzixJSON = function(next) {
-  // reads global user information from home directory
-  var azixconfig = JSON.parse(fs.readFileSync(azixconfigPath, {encoding:'utf8'}));
+var createAzixJSON = function() {
+  var deferred = Q.defer();
 
   azixJSON.username = azixconfig.username;
   azixJSON.password = azixconfig.password;
   azixJSON.timestamp = new Date();
 
-  next();
+  deferred.resolve();
+
+  return deferred.promise;
 };
 
-// sends a post request notifying the server of input sources added by the user initiating a chain of commands
 var notifyServer = function () {
+  var deferred = Q.defer();
+
   var req = http.request({
     method: 'POST',
     hostname: serverUtils.serverURL,
@@ -59,45 +64,56 @@ var notifyServer = function () {
       resBody += chunk;
     });
     res.on('end', function() {
-      clonePristineRepo(JSON.parse(resBody));
+      deferred.resolve(JSON.parse(resBody));
     });
   });
 
   // server checks for unique project name
   req.on('error', function(err) {
     if (err.message = 'project name taken') {
-      // redo prompt if project name taken
-      console.log('Error: Project name not unique. Restarting...');
-      init();
+      deferred.reject('Error: Project name not unique. Restarting...');
+    } else {
+      deferred.reject(err);
     }
   });
 
-  // send user information as POST request body
   req.write(JSON.stringify(azixJSON));
   req.end();
+
+  return deferred.promise;
 };
 
 var clonePristineRepo = function(responseObject) {
+  var deferred = Q.defer();
 
   var repoURL = responseObject.endpoint;
   var projectPath = path.join(cwdPath, azixJSON.projectName);
-  // perhaps validate that directory called projectName doesn't already exist?
+  // perhaps validate that directory called projectName doesn't already exist in this folder?
   git.clone(repoURL, projectPath, function(err) {
     if (err) {
-      console.log(err);
+      deferred.reject(err);
     }
     fs.writeFileSync(path.join(projectPath, 'azix.json'), azixJSON);
-    console.log('Project initiated!');
+    deferred.resolve('Project initiated!');
   });
+
+  return deferred.promise;
 };
 
-// main init function (exported)
 var init = function () {
-  promptProjectName(function(){
-    createAzixJSON(function(){
-      notifyServer();
-    });
-  });
+  promptProjectName()
+  .then(createAzixJSON)
+  .then(notifyServer)
+  .then(function(responseObj) {
+    clonePristineRepo(responseObj);
+  }, function(err) {
+    console.log(err);
+    init();
+  })
+  .then(function(successOutput) {
+    console.log(successOutput);
+  })
+  .catch(console.log);
 };
 
 module.exports = init;
