@@ -6,7 +6,7 @@ var run = require('./commands/run.js');
 var fetch = require('./commands/fetch.js');
 
 program
-  .version(require('../package.json').version);
+  .version(require('./package.json').version);
 
 program
   .command('config')
@@ -16,6 +16,7 @@ program
 program
   .command('init')
   .description('initialize')
+  .option('-p, --project', 'Your project name')
   .action(init);
 
 program

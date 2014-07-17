@@ -11,7 +11,7 @@ var gitCurrent = function () {
 
   repo.current_commit(function(err, commit) {
     if (err) {
-      deferred.reject(err);
+      deferred.reject(new Error(err));
     }
 
     commits.push(commit);
@@ -24,7 +24,7 @@ var gitCurrent = function () {
 var gitPull = function () {
   var deferred = Q.defer();
 
-  repo.pull (deferred.makeNodeResolver());
+  repo.pull(deferred.makeNodeResolver());
 
   return deferred.promise;
 };

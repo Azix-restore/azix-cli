@@ -15,27 +15,32 @@ var Q = require('q');
 
 var homepath = utils.getUserHome();
 var cwdPath = process.cwd();
-
 var azixconfigPath = path.join(homepath, '.azixconfig');
-var azixconfig = JSON.parse(fs.readFileSync(azixconfigPath, {encoding:'utf8'}));
+
 
 var azixJSON = {};
 
 var promptProjectName = function () {
   var deferred = Q.defer();
 
-  inquirer.prompt([{
-    type:'input',
-    name:'projectName',
-    message:'Please input your (unique) azix project name'
-  }], function(answer){
-    deferred.resolve(answer.projectName);
-  });
+  // if (this.project) {
+  //   deferred.resolve(this.project)
+  // } else {
+    inquirer.prompt([{
+      type:'input',
+      name:'projectName',
+      message:'Please input your (unique) azix project name'
+    }], function(answer){
+      deferred.resolve(answer.projectName);
+    });
+  // }
 
   return deferred.promise;
 };
 
 var createAzixJSON = function(projectName) {
+  var azixconfig = JSON.parse(fs.readFileSync(azixconfigPath, {encoding:'utf8'}));
+
   var deferred = Q.defer();
 
   azixJSON.username = azixconfig.username;
@@ -69,9 +74,9 @@ var notifyServer = function () {
   // server checks for unique project name
   req.on('error', function(err) {
     if (err.message = 'project name taken') {
-      deferred.reject('Error: Project name not unique. Restarting...');
+      deferred.reject(new Error('Error: Project name not unique. Restarting...'));
     } else {
-      deferred.reject(err);
+      deferred.reject(new Error(err));
     }
   });
 
@@ -89,7 +94,7 @@ var clonePristineRepo = function(responseObject) {
   // perhaps validate that directory called projectName doesn't already exist in this folder?
   git.clone(repoURL, projectPath, function(err) {
     if (err) {
-      deferred.reject(err);
+      deferred.reject(new Error(err));
     }
     fs.writeFileSync(path.join(projectPath, 'azix.json'), azixJSON);
     deferred.resolve('Project initiated!');

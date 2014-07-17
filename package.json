@@ -1,0 +1,30 @@
+{
+  "name": "azix",
+  "version": "0.0.0",
+  "description": "Azix ==== We’re trying to abstract away execution and version-control from data analytics by building a Github for data science projects.  It will allow a user to run scripts on AWS VMs and easily access and share the reports/output through a CLI and web application.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Azix/azix.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Azix/azix/issues"
+  },
+  "homepage": "https://github.com/Azix/azix",
+  "dependencies": {
+    "commander": "^2.2.0",
+    "gift": "^0.4.2",
+    "inquirer": "^0.5.1",
+    "prompt": "^0.2.13",
+    "q": "^1.0.1",
+    "underscore": "^1.6.0"
+  },
+  "bin": {
+    "azix": "index.js"
+  }
+}

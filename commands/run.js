@@ -11,7 +11,6 @@ var currentPath = process.cwd();
 
 var repo = git(currentPath);
 
-var azixJSON = fs.readFileSync(path.join(currentPath, 'azix.json'), {encoding:'utf8'});
 
 var gitAdd = function(folder) {
   var deferred = Q.defer();
@@ -39,6 +38,8 @@ var gitPush = function () {
 
 var notifyServer = function () {
   var deferred = Q.defer();
+  
+  var azixJSON = fs.readFileSync(path.join(currentPath, 'azix.json'), {encoding:'utf8'});
 
   var req = http.request({
     method: 'POST',
@@ -56,7 +57,7 @@ var notifyServer = function () {
   });
 
   req.on('error', function(err) {
-    deferred.reject(err.message);
+    deferred.reject(new Error(err.message));
   });
 
   req.write(azixJSON);
