@@ -9,7 +9,7 @@ var path = require('path');
 var inquirer = require('inquirer');
 var utils = require('../lib/utils.js');
 var serverUtils = require('../lib/serverutils.js');
-var http = require('http');
+var request = require('request');
 var git = require('gift');
 var Q = require('q');
 
@@ -48,40 +48,26 @@ var createAzixJSON = function(projectName) {
   azixJSON.project = projectName;
   azixJSON.timestamp = (new Date()).toString();
 
-  deferred.resolve();
+  deferred.resolve(azixJSON);
 
   return deferred.promise;
 };
 
-var notifyServer = function () {
+var notifyServer = function (data) {
   var deferred = Q.defer();
 
-  var req = http.request({
+  var options = {
     method: 'POST',
-    hostname: serverUtils.serverURL,
-    port: serverUtils.serverPORT,
-    path: serverUtils.serverAPIINIT,
-  }, function(res) {
-    var resBody;
-    res.on('data', function (chunk) {
-      resBody += chunk;
-    });
-    res.on('end', function() {
-      deferred.resolve(JSON.parse(resBody));
-    });
-  });
-
-  // server checks for unique project name
-  req.on('error', function(err) {
-    if (err.message = 'project name taken') {
-      deferred.reject(new Error('Project name not unique. Restarting...'));
-    } else {
+    url: 'http://' + serverUtils.serverURL + ':' + serverUtils.serverPORT + serverUtils.serverAPIINIT,
+    json: data
+  };
+  request(options, function(err, res, body) {
+    if (err) {
       deferred.reject(new Error(err));
+    } else {
+      deferred.resolve(body);
     }
   });
-
-  req.write(JSON.stringify(azixJSON));
-  req.end();
 
   return deferred.promise;
 };
@@ -90,13 +76,13 @@ var clonePristineRepo = function(responseObject) {
   var deferred = Q.defer();
 
   var repoURL = responseObject.endpoint;
-  var projectPath = path.join(cwdPath, azixJSON.projectName);
+  var projectPath = path.join(cwdPath, azixJSON.project);
   // perhaps validate that directory called projectName doesn't already exist in this folder?
   git.clone(repoURL, projectPath, function(err) {
     if (err) {
       deferred.reject(new Error(err));
     }
-    fs.writeFileSync(path.join(projectPath, 'azix.json'), azixJSON);
+    fs.writeFileSync(path.join(projectPath, 'azix.json'), JSON.stringify(azixJSON));
     deferred.resolve('Project initiated!');
   });
 
