@@ -20,12 +20,12 @@ var azixconfigPath = path.join(homepath, '.azixconfig');
 
 var azixJSON = {};
 
-var promptProjectName = function () {
+var promptProjectName = function (projectname) {
   var deferred = Q.defer();
 
-  // if (this.project) {
-  //   deferred.resolve(this.project)
-  // } else {
+  if (typeof(projectname)==='string') {
+    deferred.resolve(projectname)
+  } else {
     inquirer.prompt([{
       type:'input',
       name:'projectName',
@@ -33,7 +33,7 @@ var promptProjectName = function () {
     }], function(answer){
       deferred.resolve(answer.projectName);
     });
-  // }
+  }
 
   return deferred.promise;
 };
@@ -103,8 +103,9 @@ var clonePristineRepo = function(responseObject) {
   return deferred.promise;
 };
 
-var init = function () {
-  promptProjectName()
+var init = function (projectname) {
+
+  promptProjectName(projectname)
   .then(createAzixJSON)
   .then(notifyServer)
   .then(function(responseObj) {

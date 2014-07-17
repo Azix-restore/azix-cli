@@ -16,7 +16,6 @@ program
 program
   .command('init')
   .description('initialize')
-  .option('-p, --project', 'Your project name')
   .action(init);
 
 program
