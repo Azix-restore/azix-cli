@@ -1,5 +1,3 @@
-
-
 var git = require('gift');
 var Q = require('q');
 
