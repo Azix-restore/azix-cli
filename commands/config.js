@@ -17,7 +17,7 @@ var configQuestions = function() {
   var questions = [
     {
       type: 'input',
-      name: 'username',
+      name: 'user',
       message: 'Please input your azix username'
     },
     {
