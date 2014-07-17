@@ -74,7 +74,7 @@ var notifyServer = function () {
   // server checks for unique project name
   req.on('error', function(err) {
     if (err.message = 'project name taken') {
-      deferred.reject(new Error('Error: Project name not unique. Restarting...'));
+      deferred.reject(new Error('Project name not unique. Restarting...'));
     } else {
       deferred.reject(new Error(err));
     }
@@ -109,14 +109,14 @@ var init = function () {
   .then(notifyServer)
   .then(function(responseObj) {
     clonePristineRepo(responseObj);
-  }, function(err) {
-    console.log(err);
-    init();
   })
   .then(function(successOutput) {
     console.log(successOutput);
   })
-  .catch(console.log);
+  .catch(function(err) {
+    console.log(err);
+    init();
+  });
 };
 
 module.exports = init;
