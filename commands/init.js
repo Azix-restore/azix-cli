@@ -94,7 +94,7 @@ var init = function () {
   .then(createAzixJSON)
   .then(notifyServer)
   .then(function(responseObj) {
-    clonePristineRepo(responseObj);
+    return clonePristineRepo(responseObj);
   })
   .then(function(successOutput) {
     console.log(successOutput);
