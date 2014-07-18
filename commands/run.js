@@ -1,7 +1,7 @@
 // Assume user has cd'd into the azix project folder and added files to the requisite folders
 
 var fs = require('fs');
-var http = require('http');
+var request = require('request');
 var path = require('path');
 var git = require('gift');
 var Q = require('q');
@@ -38,30 +38,21 @@ var gitPush = function () {
 
 var notifyServer = function () {
   var deferred = Q.defer();
-  
+
   var azixJSON = fs.readFileSync(path.join(currentPath, 'azix.json'), {encoding:'utf8'});
 
-  var req = http.request({
+  var options = {
     method: 'POST',
-    hostname: serverUtils.serverURL,
-    port: serverUtils.serverPORT,
-    path: serverUtils.serverAPIRUN,
-  }, function(res) {
-    var resBody;
-    res.on('data', function (chunk) {
-      resBody += chunk;
-    });
-    res.on('end', function() {
-      deferred.resolve(resBody);
-    });
+    url: 'http://' + serverUtils.serverURL + ':' + serverUtils.serverPORT + serverUtils.serverAPIRUN,
+    json: JSON.parse(azixJSON)
+  };
+  request(options, function(err, res, body) {
+    if (err) {
+      deferred.reject(new Error(err));
+    } else {
+      deferred.resolve(body);
+    }
   });
-
-  req.on('error', function(err) {
-    deferred.reject(new Error(err.message));
-  });
-
-  req.write(azixJSON);
-  req.end();
 
   return deferred.promise;
 };

@@ -46,7 +46,7 @@ var createAzixJSON = function(projectName) {
   azixJSON.user = azixconfig.user;
   azixJSON.password = azixconfig.password;
   azixJSON.project = projectName;
-  azixJSON.timestamp = (new Date()).toString();
+  // azixJSON.timestamp = (new Date()).toString();
 
   deferred.resolve(azixJSON);
 
