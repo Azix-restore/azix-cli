@@ -6,6 +6,25 @@ var repo = git(currentPath);
 
 var commits = [];
 
+var fetch = function () {
+  /*
+    Attempts to fetch output from the server using "git pull."
+
+    1. Pushes current commit into temp array, for comparison later
+    2. "Pulls" from remote origin master
+    3. Pushes new commit into temp array, for comparison
+    4a. If commit SHA ID has changed after pull, notifies user that process is complete
+    4b. Else, notify user that process is still incomplete.
+
+  */
+
+  gitCurrent()
+  .then(gitPull)
+  .then(gitCurrent)
+  .then(checkCommitDiff)
+  .catch(console.log);
+};
+
 var gitCurrent = function () {
   var deferred = Q.defer();
 
@@ -35,15 +54,6 @@ var checkCommitDiff = function () {
   } else {
     console.log('Your project is complete! Please find your files in the "output" folder.');
   }
-};
-
-
-var fetch = function () {
-  gitCurrent()
-  .then(gitPull)
-  .then(gitCurrent)
-  .then(checkCommitDiff)
-  .catch(console.log);
 };
 
 module.exports = fetch;

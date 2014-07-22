@@ -1,28 +1,51 @@
-// azix init (client)
-//   -> create a azix.json local repository file that contains “username (found from global else prompt), project name, unique  identifier of a timestamp”
-//   -> creates a repo on the azix server by sending a POST request with asix.json as body. POST request response should be url of server repo. Error - message from server
-//   -> clones down that repo from server using git clone (gift)
-//     -> said folder should contain three directories without removing any existing data
-
 var fs = require('fs');
-var path = require('path');
+var git = require('gift');
 var inquirer = require('inquirer');
+var path = require('path');
+var Q = require('q');
+var request = require('request');
+
 var utils = require('../lib/utils.js');
 var serverUtils = require('../lib/serverutils.js');
-var request = require('request');
-var git = require('gift');
-var Q = require('q');
+var config = require('./config.js');
 
 var homepath = utils.getUserHome();
 var cwdPath = process.cwd();
 var azixconfigPath = path.join(homepath, '.azixconfig');
 
-
 var azixJSON = {};
+
+var init = function (projectname) {
+  /*
+    Creates a new Azix project in the current directory.
+
+    1. Prompts user for a unique project name, if not provided as argument to "azix init" command
+    2. If .azixconfig does not exist, call "azix config"
+    3. Creates azixJSON object to store username, password, and projectname
+    4. Sends POST request to server, notifying it of the new project
+    5a. If the server detects no error, clones down the project repository using git
+    5b. If there is an error (such as a non-unique projectname), logs that error and restarts the init() process.
+
+    arguments:
+    projectname - optional
+  */
+
+  promptProjectName(projectname)
+  .then(checkAzixconfig)
+  .then(createAzixJSON)
+  .then(notifyServer)
+  .then(clonePristineRepo)
+  .then(console.log)
+  .catch(function(err) {
+    console.log(err);
+    init();
+  });
+};
 
 var promptProjectName = function (projectname) {
   var deferred = Q.defer();
 
+  // This is a hacky way to check if projectname is passed in as argument
   if (typeof(projectname)==='string') {
     deferred.resolve(projectname)
   } else {
@@ -38,15 +61,32 @@ var promptProjectName = function (projectname) {
   return deferred.promise;
 };
 
-var createAzixJSON = function(projectName) {
-  var azixconfig = JSON.parse(fs.readFileSync(azixconfigPath, {encoding:'utf8'}));
-
+var checkAzixconfig = function (projectname) {
   var deferred = Q.defer();
+
+  fs.exists(azixconfigPath, function(exists) {
+    if (! exists) {
+      config()
+      .then(function() {
+        deferred.resolve(projectname);
+      });
+    } else {
+      deferred.resolve(projectname);
+    }
+  })
+
+  return deferred.promise;
+}
+
+var createAzixJSON = function (projectname) {
+  var deferred = Q.defer();
+
+  azixJSON.project = projectname;
+
+  var azixconfig = JSON.parse(fs.readFileSync(azixconfigPath, {encoding:'utf8'}));
 
   azixJSON.user = azixconfig.user;
   azixJSON.password = azixconfig.password;
-  azixJSON.project = projectName;
-  // azixJSON.timestamp = (new Date()).toString();
 
   deferred.resolve(azixJSON);
 
@@ -77,7 +117,7 @@ var clonePristineRepo = function(responseObject) {
 
   var repoURL = responseObject.endpoint;
   var projectPath = path.join(cwdPath, azixJSON.project);
-  // perhaps validate that directory called projectName doesn't already exist in this folder?
+  // perhaps validate that directory called projectname doesn't already exist in this folder?
   git.clone(repoURL, projectPath, function(err) {
     if (err) {
       deferred.reject(new Error(err));
@@ -87,23 +127,6 @@ var clonePristineRepo = function(responseObject) {
   });
 
   return deferred.promise;
-};
-
-var init = function (projectname) {
-
-  promptProjectName(projectname)
-  .then(createAzixJSON)
-  .then(notifyServer)
-  .then(function(responseObj) {
-    return clonePristineRepo(responseObj);
-  })
-  .then(function(successOutput) {
-    console.log(successOutput);
-  })
-  .catch(function(err) {
-    console.log(err);
-    init();
-  });
 };
 
 module.exports = init;

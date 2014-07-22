@@ -1,5 +1,3 @@
-// Assume user has cd'd into the azix project folder and added files to the requisite folders
-
 var fs = require('fs');
 var request = require('request');
 var path = require('path');
@@ -11,6 +9,23 @@ var currentPath = process.cwd();
 
 var repo = git(currentPath);
 
+var run = function () {
+  /*
+    Assuming the user has cd'd into the azix project folder and added her files to the requisite folders, notify's server to spin up cloud instance and run scripts.
+
+    1. "Adds" all files in directory to git repo
+    2. "Commits" changes
+    3. "Pushes" repo to remote origin on server
+    4. Sends POST request to server, notifying it of the git push
+  */
+
+  gitAdd('.')
+  .then(gitCommit)
+  .then(gitPush)
+  .then(notifyServer)
+  .then(console.log)
+  .catch(console.log);
+};
 
 var gitAdd = function(folder) {
   var deferred = Q.defer();
@@ -46,6 +61,7 @@ var notifyServer = function () {
     url: 'http://' + serverUtils.serverURL + ':' + serverUtils.serverPORT + serverUtils.serverAPIRUN,
     json: JSON.parse(azixJSON)
   };
+
   request(options, function(err, res, body) {
     if (err) {
       deferred.reject(new Error(err));
@@ -55,18 +71,6 @@ var notifyServer = function () {
   });
 
   return deferred.promise;
-};
-
-var run = function () {
-  gitAdd('scripts')
-  .then(function(){
-    gitAdd('data');
-  })
-  .then(gitCommit)
-  .then(gitPush)
-  .then(notifyServer)
-  .then(console.log)
-  .catch(console.log);
 };
 
 module.exports = run;
