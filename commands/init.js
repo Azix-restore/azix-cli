@@ -6,7 +6,7 @@ var Q = require('q');
 var request = require('request');
 
 var utils = require('../lib/utils.js');
-var serverUtils = require('../lib/serverutils.js');
+var serverUtils = require('../config.js');
 var config = require('./config.js');
 
 var homepath = utils.getUserHome();

@@ -3,7 +3,7 @@ var request = require('request');
 var path = require('path');
 var git = require('gift');
 var Q = require('q');
-var serverUtils = require('../lib/serverutils.js');
+var serverUtils = require('../config.js');
 
 var currentPath = process.cwd();
 
